@@ -1,0 +1,127 @@
+{
+  "entities": {
+    "PortfolioItem": {
+      "title": "PortfolioItem",
+      "description": "Showcase item produced by SS Creative studio",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "category": { "type": "string" },
+        "description": { "type": "string" },
+        "clientName": { "type": "string" },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "featured": { "type": "boolean" },
+        "accentColor": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "category", "description"]
+    },
+    "ClientProject": {
+      "title": "ClientProject",
+      "description": "Project tracked for a client by SS Creative",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "clientId": { "type": "string" },
+        "clientName": { "type": "string" },
+        "title": { "type": "string" },
+        "category": { "type": "string" },
+        "status": { "type": "string" },
+        "progressPercent": { "type": "integer" },
+        "startDate": { "type": "string" },
+        "targetDate": { "type": "string" },
+        "description": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["clientId", "title", "status", "progressPercent"]
+    },
+    "AppNotification": {
+      "title": "AppNotification",
+      "description": "System or project notification for a client",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "type": { "type": "string" },
+        "read": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "title", "message", "type"]
+    },
+    "ChatMessage": {
+      "title": "ChatMessage",
+      "description": "Chat message between client and Nidhi Agarwal AI or SS Creative team",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "sender": { "type": "string" },
+        "senderName": { "type": "string" },
+        "text": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "sender", "senderName", "text"]
+    },
+    "GstInvoice": {
+      "title": "GstInvoice",
+      "description": "GST Tax invoice issued by SS Creative to clients",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "invoiceNumber": { "type": "string" },
+        "clientId": { "type": "string" },
+        "clientName": { "type": "string" },
+        "clientGstin": { "type": "string" },
+        "clientAddress": { "type": "string" },
+        "clientPhone": { "type": "string" },
+        "clientEmail": { "type": "string" },
+        "placeOfSupply": { "type": "string" },
+        "invoiceDate": { "type": "string" },
+        "dueDate": { "type": "string" },
+        "subtotal": { "type": "number" },
+        "cgstAmount": { "type": "number" },
+        "sgstAmount": { "type": "number" },
+        "igstAmount": { "type": "number" },
+        "totalAmount": { "type": "number" },
+        "gstRatePercent": { "type": "number" },
+        "isInterState": { "type": "boolean" },
+        "status": { "type": "string" },
+        "paymentMode": { "type": "string" },
+        "notes": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["invoiceNumber", "clientName", "totalAmount", "status"]
+    }
+  },
+  "firestore": {
+    "/portfolio/{itemId}": {
+      "schema": { "$ref": "#/entities/PortfolioItem" },
+      "description": "SS Creative portfolio showcase items"
+    },
+    "/projects/{projectId}": {
+      "schema": { "$ref": "#/entities/ClientProject" },
+      "description": "Client creative projects and ongoing deliverables"
+    },
+    "/invoices/{invoiceId}": {
+      "schema": { "$ref": "#/entities/GstInvoice" },
+      "description": "GST tax invoices and billing records"
+    },
+    "/users/{userId}/notifications/{notificationId}": {
+      "schema": { "$ref": "#/entities/AppNotification" },
+      "description": "Personalized notifications for client updates"
+    },
+    "/users/{userId}/messages/{messageId}": {
+      "schema": { "$ref": "#/entities/ChatMessage" },
+      "description": "Chat conversation messages with Nidhi Agarwal AI agent and admin"
+    }
+  }
+}

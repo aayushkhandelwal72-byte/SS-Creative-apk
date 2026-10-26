@@ -1,0 +1,119 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isValidPortfolio(data) {
+      return data.keys().hasAll(['title', 'category', 'description']) &&
+             data.title is string && data.title.size() > 0 && data.title.size() <= 200 &&
+             data.category is string && data.category.size() > 0 &&
+             data.description is string && data.description.size() <= 2000 &&
+             (!('featured' in data) || data.featured is bool) &&
+             (!('clientName' in data) || data.clientName is string) &&
+             (!('accentColor' in data) || data.accentColor is string) &&
+             (!('imageUrl' in data) || data.imageUrl is string) &&
+             (!('createdAt' in data) || data.createdAt is timestamp);
+    }
+
+    function isValidProject(data) {
+      return data.keys().hasAll(['clientId', 'title', 'status', 'progressPercent']) &&
+             data.clientId is string && data.clientId.size() > 0 &&
+             data.title is string && data.title.size() > 0 && data.title.size() <= 200 &&
+             data.status is string &&
+             data.progressPercent is int && data.progressPercent >= 0 && data.progressPercent <= 100 &&
+             (!('category' in data) || data.category is string) &&
+             (!('startDate' in data) || data.startDate is string) &&
+             (!('targetDate' in data) || data.targetDate is string) &&
+             (!('description' in data) || data.description is string) &&
+             (!('createdAt' in data) || data.createdAt is timestamp) &&
+             (!('updatedAt' in data) || data.updatedAt is timestamp);
+    }
+
+    function isValidNotification(data) {
+      return data.keys().hasAll(['userId', 'title', 'message', 'type']) &&
+             data.userId is string &&
+             data.title is string && data.title.size() > 0 && data.title.size() <= 200 &&
+             data.message is string && data.message.size() <= 1000 &&
+             data.type is string &&
+             (!('read' in data) || data.read is bool) &&
+             (!('createdAt' in data) || data.createdAt is timestamp);
+    }
+
+    function isValidChatMessage(data) {
+      return data.keys().hasAll(['userId', 'sender', 'senderName', 'text']) &&
+             data.userId is string &&
+             data.sender is string &&
+             data.senderName is string &&
+             data.text is string && data.text.size() > 0 && data.text.size() <= 4000 &&
+             (!('createdAt' in data) || data.createdAt is timestamp);
+    }
+
+    function isValidInvoice(data) {
+      return data.keys().hasAll(['invoiceNumber', 'clientName', 'totalAmount', 'status']) &&
+             data.invoiceNumber is string && data.invoiceNumber.size() > 0 && data.invoiceNumber.size() <= 50 &&
+             data.clientName is string && data.clientName.size() > 0 && data.clientName.size() <= 200 &&
+             (data.totalAmount is number || data.totalAmount is int) && data.totalAmount >= 0 &&
+             data.status is string &&
+             (!('clientId' in data) || data.clientId is string) &&
+             (!('clientGstin' in data) || data.clientGstin is string) &&
+             (!('clientAddress' in data) || data.clientAddress is string) &&
+             (!('clientPhone' in data) || data.clientPhone is string) &&
+             (!('clientEmail' in data) || data.clientEmail is string) &&
+             (!('placeOfSupply' in data) || data.placeOfSupply is string) &&
+             (!('invoiceDate' in data) || data.invoiceDate is string) &&
+             (!('dueDate' in data) || data.dueDate is string) &&
+             (!('subtotal' in data) || (data.subtotal is number || data.subtotal is int)) &&
+             (!('cgstAmount' in data) || (data.cgstAmount is number || data.cgstAmount is int)) &&
+             (!('sgstAmount' in data) || (data.sgstAmount is number || data.sgstAmount is int)) &&
+             (!('igstAmount' in data) || (data.igstAmount is number || data.igstAmount is int)) &&
+             (!('gstRatePercent' in data) || (data.gstRatePercent is number || data.gstRatePercent is int)) &&
+             (!('isInterState' in data) || data.isInterState is bool) &&
+             (!('paymentMode' in data) || data.paymentMode is string) &&
+             (!('notes' in data) || data.notes is string) &&
+             (!('items' in data) || data.items is list) &&
+             (!('createdAt' in data) || data.createdAt is timestamp) &&
+             (!('updatedAt' in data) || data.updatedAt is timestamp);
+    }
+
+    // Portfolio showcase items (viewable by authenticated clients/staff)
+    match /portfolio/{itemId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && isValidPortfolio(request.resource.data);
+      allow delete: if isAuthenticated();
+    }
+
+    // Projects (accessible by the project client or studio admin)
+    match /projects/{projectId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && isValidProject(request.resource.data);
+      allow delete: if isAuthenticated();
+    }
+
+    // GST Invoices (accessible by authenticated clients and staff)
+    match /invoices/{invoiceId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && isValidInvoice(request.resource.data);
+      allow delete: if isAuthenticated();
+    }
+
+    // User-scoped notifications
+    match /users/{userId}/notifications/{notificationId} {
+      allow read, write: if isOwner(userId) || (isAuthenticated() && isValidNotification(request.resource.data));
+    }
+
+    // User-scoped chat messages (Nidhi Agarwal AI & Studio conversations)
+    match /users/{userId}/messages/{messageId} {
+      allow read: if isOwner(userId);
+      allow create: if (isOwner(userId) || isAuthenticated()) && isValidChatMessage(request.resource.data);
+      allow update, delete: if isOwner(userId);
+    }
+  }
+}

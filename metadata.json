@@ -1,0 +1,6 @@
+{
+  "name": "SS Creative",
+  "description": "Client portal, creative portfolio showcase, editable paint brush studio, and GST billing software for SS Creative studio with real-time updates, notifications, Nidhi Agarwal AI agent, and admin dashboard.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
